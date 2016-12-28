@@ -1,3 +1,6 @@
+// hpcproject.cpp : Defines the entry point for the console application.
+//
+
 #include "stdafx.h"
 #include <iostream>
 #include <stdio.h>
@@ -27,8 +30,10 @@ vector<vector<string>>  lcs(string str1, string str2){
 	cout << endl;
 
 	start = omp_get_wtime();
-	#pragma omp parallel num_threads(8)
+	#pragma omp parallel num_threads(4)
 	{
+		
+		
 	#pragma omp for 
 	//initialize the first row and column with 0
 	for(int i = 0; i<len1;i++){
@@ -40,8 +45,10 @@ vector<vector<string>>  lcs(string str1, string str2){
 	}
 	
 	//fill the indecies and arrows arrays
-	//#pragma omp for 
-	for(int i = 1; i< len1;i++){
+	//sequential part
+	//#pragma omp for schedule(static,1)
+	for(int i = 1; i< len1;i=i++){
+		#pragma omp for schedule(dynamic,1)
 		for(int j =1 ; j<len2;j++){
 			//matching condition:
 			if(str1.at(i)== str2.at(j)){
@@ -62,6 +69,8 @@ vector<vector<string>>  lcs(string str1, string str2){
 			}
 		}
 	}
+	
+	
 	/*#pragma omp for
 	//printing the arrays out 
 	for(int i = 0; i<indecies.size();i++){
@@ -71,13 +80,7 @@ vector<vector<string>>  lcs(string str1, string str2){
 		cout << endl;
 	}*/
 	}
-	/*
-	for(int i = 0; i<arrows.size();i++){
-		for(int j = 0;j<arrows[1].size();j++){
-			cout << arrows[i][j] << " " ;
-		}
-		cout << endl;
-	}*/
+	
 	end = omp_get_wtime();
     time1 = end - start;
 	//printf("Total Time1: %f\n", time1);
@@ -86,18 +89,19 @@ vector<vector<string>>  lcs(string str1, string str2){
 }
 
 
+
 void backTrack(vector<vector<string>> myvec, string str1, int i, int j, int count){
-	
-		if(i==0 || j==0){
-			
-			printf("Length = %d\n",count);
+
+		if(i==0 || j==0){			
+			cout<<endl;
+			printf(" Length = %d\n",count);
 			return;
 		}
 		if(myvec[i][j] == "CORNER"){
 			count++;
 			backTrack(myvec, str1, i -1,j-1, count);
 			if (length == false){
-			cout << endl <<"Longest Common Subsequence is ";
+			cout << endl <<" Longest Common Subsequence is ";
 			length = true;
 		}
 			cout << str1.at(i);
@@ -107,9 +111,12 @@ void backTrack(vector<vector<string>> myvec, string str1, int i, int j, int coun
 		}
 		else if(myvec[i][j] == "LEFT"){
 			backTrack(myvec, str1, i, j-1, count);
-
+		
 		}
 }
+
+
+
 void main(){
 
     double start; // time before algorithm
@@ -121,11 +128,11 @@ void main(){
 
 	cout << "Enter the string on the column: ";
     string str1 = ""; //col string 
-    cin >> str1;
+	getline(cin, str1);
     str1 = "_" + str1;
     cout << "Enter the string on the row: ";
     string str2 = ""; //row string 
-    cin >> str2;
+    getline(cin, str2);
     str2 = "_" + str2;
 
 	 
@@ -138,13 +145,13 @@ void main(){
 		for(int j = 0;j<myvec[1].size();j++){
 			cout << myvec[i][j] << " " ;
 		}
-
+	
 		cout << endl;
 	}
-
+	
 	
 
-	cout<< endl <<" Longest Common Subsequence is ";
+	//cout<< endl <<" Longest Common Subsequence is ";
 
 	start = omp_get_wtime();
 
